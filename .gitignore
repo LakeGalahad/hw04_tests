@@ -11,7 +11,6 @@ __pycache__/
 .DS_Store
 .AppleDouble
 .LSOverride
-.vscode
 
 *.sublime-project
 *.sublime-workspace
@@ -20,3 +19,12 @@ static/
 posts/static/
 
 db.sqlite3
+
+sent_emails/
+
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+*.vscode
