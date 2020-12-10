@@ -5,7 +5,8 @@ User = get_user_model()
 
 
 class Post(models.Model):
-
+    class Meta:
+        ordering = ['-pub_date']
     text = models.TextField(
                     verbose_name="Текст поста",
                     help_text="Поделитесь своими мыслями с миром"

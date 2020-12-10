@@ -20,14 +20,14 @@ class PostCreateFormTests(TestCase):
         Post.objects.create(
             text="test",
             pub_date=dt.date.today(),
-            author=get_user_model().objects.get(id=1),
-            group=Group.objects.get(id=1)
+            author=get_user_model().objects.first(),
+            group=Group.objects.first()
         )
-        cls.group = Group.objects.get(id=1)
-        cls.post = Post.objects.get(id=1)
+        cls.group = Group.objects.first()
+        cls.post = Post.objects.first()
 
     def setUp(self):
-        self.user = get_user_model().objects.get(id=1)
+        self.user = get_user_model().objects.first()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
@@ -42,8 +42,8 @@ class PostCreateFormTests(TestCase):
             reverse("new_post"),
             data=form_data,
         )
-        self.assertRedirects(response, "/")
-        self.assertEqual(Post.objects.count(), posts_count+1)
+        self.assertRedirects(response, reverse("index"))
+        self.assertEqual(Post.objects.count(), posts_count + 1)
 
     def test_edit_post(self):
         group = PostCreateFormTests.group
@@ -55,5 +55,8 @@ class PostCreateFormTests(TestCase):
             reverse("post_edit", kwargs={"username": "test", "post_id": 1}),
             data=form_data,
         )
-        self.assertRedirects(response, "/test/1/")
-        self.assertEqual(Post.objects.get(id=1).text, "test_edit")
+        self.assertRedirects(response, reverse("post", kwargs={
+            "username": "test",
+            "post_id": 1
+        }))
+        self.assertEqual(Post.objects.first().text, "test_edit")

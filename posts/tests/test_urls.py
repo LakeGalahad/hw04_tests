@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.test import Client, TestCase
+from django.urls import reverse
 
 from posts.models import Group, Post
 
@@ -46,12 +47,12 @@ class URLTests(TestCase):
 
     def test_pages_exists(self):
         page_exists = [
-            "/",
-            "/group/mafia-town/",
-            "/test/",
-            "/test/1/",
-            "/about-author/",
-            "/about-spec/"
+            reverse("index"),
+            reverse("group", kwargs={"slug": "mafia-town"}),
+            reverse("profile", kwargs={"username": "test"}),
+            reverse("post", kwargs={"username": "test", "post_id": 1}),
+            reverse("author"),
+            reverse("spec"),
         ]
         for page in page_exists:
             with self.subTest():
@@ -60,8 +61,8 @@ class URLTests(TestCase):
 
     def test_authorized(self):
         page_auth = [
-            "/new/",
-            "/test/1/edit/",
+            reverse("new_post"),
+            reverse("post_edit", kwargs={"username": "test", "post_id": 1}),
         ]
         for page in page_auth:
             with self.subTest():
@@ -70,8 +71,15 @@ class URLTests(TestCase):
 
     def test_redirect_anonymus(self):
         page_auth = {
-            "/new/": "/auth/login/?next=/new/",
-            "/test/1/edit/": "/auth/login/?next=/test/1/edit/",
+            reverse("new_post"):
+            reverse("login") + "?next="+reverse("new_post"),
+            reverse("post_edit", kwargs={
+                "username": "test",
+                "post_id": 1
+            }): reverse("login")+"?next=" + reverse("post_edit", kwargs={
+                "username": "test",
+                "post_id": 1
+            }),
         }
         for page, expected in page_auth.items():
             with self.subTest(expected=expected):
@@ -81,15 +89,27 @@ class URLTests(TestCase):
     def test_redirect_authorized(self):
         self.user = get_user_model().objects.get(id=2)
         self.authorized_client.force_login(self.user)
-        response = self.authorized_client.get("/test/1/edit/", follow=True)
-        self.assertRedirects(response, "/test/1/")
+        response = self.authorized_client.get(
+            reverse("post_edit", kwargs={
+                "username": "test",
+                "post_id": 1
+            }),
+            follow=True
+        )
+        self.assertRedirects(response, reverse("post", kwargs={
+            "username": "test",
+            "post_id": 1
+        }))
 
     def test_urls_uses_correct_template(self):
         templates_url_names = {
-            "/": "index.html",
-            "/group/mafia-town/": "group.html",
-            "/new/": "new.html",
-            "/test/1/edit/": "new.html",
+            reverse("index"): "index.html",
+            reverse("group", kwargs={"slug": "mafia-town"}): "group.html",
+            reverse("new_post"): "new.html",
+            reverse("post_edit", kwargs={
+                "username": "test",
+                "post_id": 1
+            }): "new.html",
         }
         for url, template in templates_url_names.items():
             with self.subTest():

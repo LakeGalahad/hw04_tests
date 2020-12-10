@@ -17,12 +17,12 @@ class PostsModelTest(TestCase):
 
         Post.objects.create(
             text="q"*20,
-            author=User.objects.get(id=1),
-            group=Group.objects.get(id=1)
+            author=User.objects.first(),
+            group=Group.objects.first()
         )
 
-        cls.post = Post.objects.get(id=1)
-        cls.group = Group.objects.get(id=1)
+        cls.post = Post.objects.first()
+        cls.group = Group.objects.first()
 
     def test_verbose_name(self):
         post = PostsModelTest.post

@@ -23,8 +23,8 @@ class ViewsTest(TestCase):
         Post.objects.create(
             text="test",
             pub_date=dt.date.today(),
-            author=get_user_model().objects.get(id=1),
-            group=Group.objects.get(id=1)
+            author=get_user_model().objects.first(),
+            group=Group.objects.first()
         )
         Site.objects.create(
             domain='localhost:8000',
@@ -34,13 +34,13 @@ class ViewsTest(TestCase):
             url="/about-author/",
             title="test_author",
             content="test",
-        ).sites.add(Site.objects.get(id=1))
+        ).sites.add(Site.objects.first())
         FlatPage.objects.create(
             url="/about-spec/",
             title="test_spec",
             content="test",
-        ).sites.add(Site.objects.get(id=1))
-        cls.post = Post.objects.get(id=1)
+        ).sites.add(Site.objects.first())
+        cls.post = Post.objects.first()
 
     def setUp(self) -> None:
         self.user = get_user_model().objects.get(id=1)
@@ -59,30 +59,34 @@ class ViewsTest(TestCase):
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
 
+    def post_context_is_correct(self, url, context_field, kwargs):
+        post = Post.objects.first()
+        response = self.authorized_client.get(reverse(url, kwargs=kwargs))
+        post_text = response.context.get(context_field)[0].text
+        post_date = response.context.get(context_field)[0].pub_date
+        post_author = response.context.get(context_field)[0].author
+        post_group = response.context.get(context_field)[0].group.title
+        self.assertEqual(post_text, "test")
+        self.assertEqual(post_date, post.pub_date)
+        self.assertEqual(post_author, self.user)
+        self.assertEqual(post_group, "Peck")
+        return response
+
     def test_index_page_show_correct_context(self):
-        post = ViewsTest.post
-        response = self.authorized_client.get(reverse("index"))
-        post_text_0 = response.context.get("page")[0].text
-        post_date_0 = response.context.get("page")[0].pub_date
-        post_author_0 = response.context.get("page")[0].author
-        post_group_0 = response.context.get("page")[0].group.title
-        self.assertEqual(post_text_0, "test")
-        self.assertEqual(post_date_0, post.pub_date)
-        self.assertEqual(post_author_0, self.user)
-        self.assertEqual(post_group_0, "Peck")
+        self.post_context_is_correct("index", "page", {})
 
     def test_group_page_show_correct_context(self):
         response = self.authorized_client.get(reverse(
             "group", kwargs={"slug": "mafia-town"}
             ))
-        group_title_0 = response.context.get("page")[0].group.title
-        group_slug_0 = response.context.get("page")[0].group.slug
-        group_description_0 = response.context.get(
+        group_title = response.context.get("page")[0].group.title
+        group_slug = response.context.get("page")[0].group.slug
+        group_description = response.context.get(
             "page"
             )[0].group.description
-        self.assertEqual(group_title_0, "Peck")
-        self.assertEqual(group_slug_0, "mafia-town")
-        self.assertEqual(group_description_0, "Revoluton")
+        self.assertEqual(group_title, "Peck")
+        self.assertEqual(group_slug, "mafia-town")
+        self.assertEqual(group_description, "Revoluton")
 
     def test_new_edit_page_show_correct_context(self):
         response = self.authorized_client.get(reverse("new_post"))
@@ -111,26 +115,22 @@ class ViewsTest(TestCase):
                 self.assertIsInstance(form_field, expected)
 
     def test_profile_page_show_correct_context(self):
-        post = ViewsTest.post
-        response = self.authorized_client.get(reverse(
-            "profile", kwargs={"username": "test"}
-            ))
-        post_text_0 = response.context.get("page")[0].text
-        post_date_0 = response.context.get("page")[0].pub_date
-        post_author_0 = response.context.get("page")[0].author
-        post_group_0 = response.context.get("page")[0].group.title
+        response = self.post_context_is_correct(
+            "profile",
+            "page",
+            {"username": "test"}
+        )
         user_request = response.context.get("user").username
         user_profile = response.context.get("user_profile").username
         paginator = len(response.context.get("paginator").object_list)
-        self.assertEqual(post_text_0, "test")
-        self.assertEqual(post_date_0, post.pub_date)
-        self.assertEqual(post_author_0, self.user)
-        self.assertEqual(post_group_0, "Peck")
         self.assertEqual(user_request, "test")
         self.assertEqual(user_profile, self.user.username)
         self.assertEqual(paginator, 1)
 
     def test_post_page_show_correct_context(self):
+        # Часть кода похожа на код в index и profile,
+        # но он различается количеством постов, сюда передается только один
+        # поэтому я не могу использовать его повторно
         post = ViewsTest.post
         response = self.authorized_client.get(reverse(
             "post", kwargs={"username": "test", "post_id": 1}

@@ -1,18 +1,18 @@
-    {% extends "base.html" %}
-    {% block title %}Последние обновления на сайте{% endblock %}
-    {% block header %}Последние обновления на сайте{% endblock %}
-    {% block content %}
+{% extends "base.html" %}
+{% block title %}Последние обновления на сайте{% endblock %}
+{% block header %}Последние обновления на сайте{% endblock %}
+{% block content %}
     
-        {% for post in page %}
-        <h3>
-            {% if post.author.get_full_name %}Автор: {{ post.author.get_full_name }}, {% endif %}
-            Дата публикации: {{ post.pub_date|date:"d M Y" }}{% if post.group.title %}, 
-            Группа: <a href="group/{{ post.group.slug }}">{{ post.group.title }}</a>{% endif %}
-        </h3>
-        <p>{{ post.text | safe | linebreaksbr }}</p>
-        {% if not forloop.last %}<hr>{% endif %}
-        {% endfor %}
+    {% for post in page %}
+    <h3>
+        {% if post.author.get_full_name %}Автор: {{ post.author.get_full_name }}, {% endif %}
+        Дата публикации: {{ post.pub_date|date:"d M Y" }}{% if post.group.title %}, 
+        Группа: <a href="group/{{ post.group.slug }}">{{ post.group.title }}</a>{% endif %}
+    </h3>
+    <p>{{ post.text | safe | linebreaksbr }}</p>
+    {% if not forloop.last %}<hr>{% endif %}
+    {% endfor %}
 
-        {% include "paginator.html" %}
+    {% include "paginator.html" %}
     
-    {% endblock %} 
+{% endblock %} 

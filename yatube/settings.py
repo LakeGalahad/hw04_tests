@@ -62,10 +62,11 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'yatube.urls'
 
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+INCLUDES_DIR = os.path.join(BASE_DIR, "templates", "includes")
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [TEMPLATES_DIR],
+        'DIRS': [TEMPLATES_DIR, INCLUDES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
