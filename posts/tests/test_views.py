@@ -166,7 +166,8 @@ class ViewsTest(TestCase):
                 self.assertEqual(flatpage, expected)
 
     def test_new_post_appears_right(self):
-        Group.objects.create(
+        user = ViewsTest.user
+        group = Group.objects.create(
             title="test",
             slug="test-slug",
             description="test"
@@ -174,8 +175,8 @@ class ViewsTest(TestCase):
         Post.objects.create(
             text="test2",
             pub_date=dt.date.today(),
-            author=get_user_model().objects.get(id=1),
-            group=Group.objects.get(id=2)
+            author=user,
+            group=group
         )
         response_index = self.authorized_client.get(reverse("index"))
         post_text_0 = response_index.context.get("page")[0].text
