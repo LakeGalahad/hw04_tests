@@ -11,7 +11,7 @@ class PostCreateFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        get_user_model().objects.create(username="test")
+        user = get_user_model().objects.create(username="test")
         Group.objects.create(
             title="Peck",
             slug="mafia-town",
@@ -20,14 +20,16 @@ class PostCreateFormTests(TestCase):
         Post.objects.create(
             text="test",
             pub_date=dt.date.today(),
-            author=get_user_model().objects.first(),
+            author=user,
             group=Group.objects.first()
         )
         cls.group = Group.objects.first()
         cls.post = Post.objects.first()
+        cls.user = user
 
     def setUp(self):
-        self.user = get_user_model().objects.first()
+        user = PostCreateFormTests.user
+        self.user = user
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 

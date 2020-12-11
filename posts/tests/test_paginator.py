@@ -16,7 +16,7 @@ class PaginatorViewsTest(TestCase):
             Post.objects.create(
                 text="test"+str(i),
                 pub_date=dt.date.today(),
-                author=get_user_model().objects.get(id=1),
+                author=get_user_model().objects.first(),
                 group=None
             )
 

@@ -5,8 +5,6 @@ User = get_user_model()
 
 
 class Post(models.Model):
-    class Meta:
-        ordering = ['-pub_date']
     text = models.TextField(
                     verbose_name="Текст поста",
                     help_text="Поделитесь своими мыслями с миром"
@@ -18,6 +16,9 @@ class Post(models.Model):
                               related_name="posts", blank=True,
                               null=True, verbose_name="Название группы",
                               help_text="Выберите группу интересов")
+
+    class Meta:
+        ordering = ['-pub_date']
 
     def __str__(self):
 

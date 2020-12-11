@@ -13,8 +13,8 @@ class URLTests(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
-        get_user_model().objects.create(username="test")
-        get_user_model().objects.create(username="test2")
+        user1 = get_user_model().objects.create(username="test")
+        user2 = get_user_model().objects.create(username="test2")
         Group.objects.create(
             title="Peck",
             slug="mafia-town",
@@ -23,8 +23,8 @@ class URLTests(TestCase):
         Post.objects.create(
             text="test",
             pub_date=dt.date.today(),
-            author=get_user_model().objects.get(id=1),
-            group=Group.objects.get(id=1)
+            author=user1,
+            group=Group.objects.first()
         )
         Site.objects.create(
             domain='localhost:8000',
@@ -33,15 +33,19 @@ class URLTests(TestCase):
         FlatPage.objects.create(
             url="/about-author/",
             title="test_author",
-        ).sites.add(Site.objects.get(id=1))
+        ).sites.add(Site.objects.first())
         FlatPage.objects.create(
             url="/about-spec/",
             title="test_spec",
-        ).sites.add(Site.objects.get(id=1))
+        ).sites.add(Site.objects.first())
+
+        cls.user1 = user1
+        cls.user2 = user2
 
     def setUp(self) -> None:
+        user1 = URLTests.user1
         self.guest_client = Client()
-        self.user = get_user_model().objects.get(id=1)
+        self.user = user1
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
@@ -87,7 +91,8 @@ class URLTests(TestCase):
                 self.assertRedirects(response, expected)
 
     def test_redirect_authorized(self):
-        self.user = get_user_model().objects.get(id=2)
+        user2 = URLTests.user2
+        self.user = user2
         self.authorized_client.force_login(self.user)
         response = self.authorized_client.get(
             reverse("post_edit", kwargs={

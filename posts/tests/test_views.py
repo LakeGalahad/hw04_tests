@@ -14,7 +14,7 @@ class ViewsTest(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
-        get_user_model().objects.create(username="test")
+        user = get_user_model().objects.create(username="test")
         Group.objects.create(
             title="Peck",
             slug="mafia-town",
@@ -23,7 +23,7 @@ class ViewsTest(TestCase):
         Post.objects.create(
             text="test",
             pub_date=dt.date.today(),
-            author=get_user_model().objects.first(),
+            author=user,
             group=Group.objects.first()
         )
         Site.objects.create(
@@ -41,9 +41,11 @@ class ViewsTest(TestCase):
             content="test",
         ).sites.add(Site.objects.first())
         cls.post = Post.objects.first()
+        cls.user = user
 
     def setUp(self) -> None:
-        self.user = get_user_model().objects.get(id=1)
+        user = ViewsTest.user
+        self.user = user
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
